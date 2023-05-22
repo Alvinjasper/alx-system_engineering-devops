@@ -1,31 +1,24 @@
 #!/usr/bin/python3
 """
-    Python script that, for a given employee ID, returns
-    information about his/her TODO list progress.
+Uses the JSON placeholder api to query data about an employee
 """
 
-import requests
-import sys
+from requests import get
+from sys import argv
 
-if __name__ == "__main__":
-    id = sys.argv[1]
-    usr_url = "https://jsonplaceholder.typicode.com/users/{}".format(id)
-    tds_url = "https://jsonplaceholder.typicode.com/users/{}/todos".format(id)
+if __name__ == '__main__':
+    main_url = 'https://jsonplaceholder.typicode.com'
+    todo_url = main_url + "/user/{}/todos".format(argv[1])
+    name_url = main_url + "/users/{}".format(argv[1])
+    todo_result = get(todo_url).json()
+    name_result = get(name_url).json()
 
-    user = requests.get(usr_url).json()
-    todo = requests.get(tds_url).json()
-
-    completed_nb = 0
-    total_nb = 0
-    completed_tasks = []
-
-    for task in todo:
-        total_nb += 1
-        if task.get("completed") is True:
-            completed_nb += 1
-            completed_tasks.append(task.get("title"))
-
-    sentence = "Employee {} is done with tasks({}/{}):"
-    print(sentence.format(user.get("name"), completed_nb, total_nb))
-    for task in completed_tasks:
-        print("\t {}".format(task))
+    todo_num = len(todo_result)
+    todo_complete = len([todo for todo in todo_result
+                         if todo.get("completed")])
+    name = name_result.get("name")
+    print("Employee {} is done with tasks({}/{}):"
+          .format(name, todo_complete, todo_num))
+    for todo in todo_result:
+        if (todo.get("completed")):
+            print("\t {}".format(todo.get("title")))
